@@ -4,9 +4,13 @@ from random import uniform
 
 ## -- CONSTANTS --
 G0 = 9.81
-k = 0.0001
+k = 0.00005
 dt = 0.5
 scale_height = 8500.0
+earth_radius = 6371000
+earth_rotation_rate = 7.2921 * 10 ** -5
+lat_radius = earth_radius * math.cos(0)
+velocity_rotation = earth_rotation_rate * lat_radius
 
 class Rocket:
     def __init__(self, mass, fuel, isp, burn_time, shape, radius):
@@ -16,7 +20,6 @@ class Rocket:
         self.initial_mass = self.mass
         self.dry_mass = self.mass - self.fuel
         self.radius = radius
-        self.shape = shape
         self.cross_sectional_area = math.pi * self.radius ** 2
 
         # - ENGINE PROPERTIES -
@@ -33,7 +36,7 @@ class Rocket:
         self.velocity_y = 0.0
         self.pitch = math.radians(90.0)
 
-        self.get_drag_coefficient(shape)
+        self.drag_coefficient = self.get_drag_coefficient(shape)
 
     # -- HELPERS --
     def get_drag_coefficient(self, shape):
@@ -45,6 +48,8 @@ class Rocket:
             self.shape = 0.75
         else:
             self.shape = uniform(0.3, 0.75)
+        self.drag_coefficient = self.shape
+        return self.drag_coefficient
 
     def modify_pitch(self, pitch):
         end_pitch = 0
@@ -61,7 +66,6 @@ class Rocket:
         print("x-coordinate: " + str(round(x)) + " units.")
         print("Gravity: " + str(round(gravity, 3)) + " m/s.")
         print("Pitch: " + str(round(math.degrees(pitch))) + " degrees.")
-        print("Apoapsis: " + str(round(self.apoapsis)) + " meters.")
         print("------------------------------------")
 
     # -- SIMULATION --
@@ -71,6 +75,7 @@ class Rocket:
 
         self.acceleration = 0
         self.velocity = 0
+        self.velocity_x = velocity_rotation
         self.initial_acceleration = self.thrust/self.mass - G0
 
         self.acceleration_drag = 0
@@ -79,30 +84,32 @@ class Rocket:
 
         while self.fuel > 1:
             # - PHYSICS -
-            self.velocity += self.acceleration * dt
-            self.velocity_x = self.velocity * math.cos(self.pitch)
-            self.velocity_y += self.thrust/self.mass * math.sin(self.pitch) - gravity - self.acceleration_drag_y * dt
-
-            self.air_pressure = 1.225 * math.e ** (-self.y / scale_height)
-            self.drag = 1/2 * self.air_pressure * self.shape * self.cross_sectional_area * self.velocity ** 2
 
             if self.velocity > 0:
                 self.acceleration_drag = self.drag / self.mass
                 self.acceleration_drag_x = self.drag / self.mass * self.velocity_x / self.velocity
                 self.acceleration_drag_y = self.drag / self.mass * self.velocity_y / self.velocity
             else: pass
+            
+            self.air_pressure = 1.225 * math.e ** (-self.y / scale_height)
+            self.acceleration = self.thrust / self.mass
+            self.drag = 1/2 * self.air_pressure * self.drag_coefficient * self.cross_sectional_area * self.velocity ** 2
+            self.velocity = math.sqrt(self.velocity_x ** 2 + self.velocity_y ** 2)
+            self.velocity_y += self.thrust/self.mass * math.sin(self.pitch) - gravity - self.acceleration_drag_y * dt
+            self.drag_y = -self.drag * (self.velocity_y / self.velocity)
+            self.drag_x = -self.drag * (self.velocity_x / self.velocity)
+            self.acceleration_x = self.thrust * math.cos(self.pitch) / self.mass - self.drag_x / self.mass
+            self.velocity_x += self.acceleration_x * dt
+            self.acceleration_y = self.thrust * math.sin(self.pitch) / self.mass - gravity + self.drag_y / self.mass
 
-            self.acceleration = self.thrust/self.mass - gravity - self.acceleration_drag
-            self.acceleration_x = self.thrust/self.mass * math.cos(self.pitch) - self.acceleration_drag_x
-            self.acceleration_y = self.thrust/self.mass * math.sin(self.pitch) - self.acceleration_drag_y - gravity
-
-            self.mass -= self.mass_flow_rate * dt
-            gravity = G0 * (6371000/(6371000+self.y))**2
-            self.fuel -= self.mass_flow_rate * dt
-            self.deltav = self.isp * G0 * math.log(self.mass / self.dry_mass)
 
             self.y += self.velocity_y * dt 
             self.x += self.velocity_x * dt
+
+            self.mass -= self.mass_flow_rate * dt
+            gravity = G0 * (earth_radius / (earth_radius+self.y)) ** 2
+            self.fuel -= self.mass_flow_rate * dt
+            self.deltav = self.isp * G0 * math.log(self.mass / self.dry_mass)
 
             self.apoapsis = self.y + (self.velocity**2) / (2 * gravity)
             self.pitch = self.modify_pitch(self.pitch)
