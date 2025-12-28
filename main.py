@@ -9,7 +9,5 @@ from rocket import Rocket
 # The cross-sectional area (second parameter) is the radius in meters of the front of the rocket.
 
 alpha1 = Rocket(50100, 45000, 285, 18, 'ogive', 0.9144)
-alpha1.get_deltav()
-alpha1.get_thrust()
 
 alpha1.ignite_engines()
