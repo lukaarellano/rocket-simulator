@@ -2,15 +2,25 @@
 
 import math
 from time import sleep
+from random import uniform
 
 class Rocket:
-    def __init__(self, mass, fuel, isp, burn_time):
+    def __init__(self, mass, fuel, isp, burn_time, shape):
         self.mass = mass
         self.fuel = fuel
         self.isp = isp
         self.burn_time = burn_time
         self.initial_mass = self.mass
         self.dry_mass = self.mass - self.fuel
+        self.shape = None
+        if shape == "ogive":
+            self.shape = 0.3
+        elif shape == "conical":
+            self.shape = 0.5
+        elif shape == "blunt":
+            self.shape = 0.75
+        else:
+            self.shape = uniform(0.3, 0.75)
     def get_deltav(self):
         self.deltav = float(math.log(self.mass / self.dry_mass)) * 9.81 * float(self.isp)
         return self.deltav
@@ -18,7 +28,7 @@ class Rocket:
         self.mass_flow_rate = self.fuel / self.burn_time
         self.thrust = self.mass_flow_rate * self.isp * 9.81
         return self.thrust, self.mass_flow_rate
-    def ignite_engines(self, shape, radius):
+    def ignite_engines(self, radius):
         self.cross_sectional_area = math.pi * radius ** 2
         pitch = 90
         self.y = 0
@@ -38,7 +48,7 @@ class Rocket:
             self.velocity_x = self.velocity * math.cos(pitch)
             self.velocity_y = self.velocity * math.sin(pitch)
             self.air_pressure = 1.225 * math.e ** (-self.y / 8500)
-            self.drag = 1/2 * self.air_pressure * shape * self.cross_sectional_area * self.velocity ** 2
+            self.drag = 1/2 * self.air_pressure * self.shape * self.cross_sectional_area * self.velocity ** 2
             if self.velocity > 0:
                 self.acceleration_drag = self.drag / self.mass
                 self.acceleration_drag_x = self.drag / self.mass * self.velocity_x / self.velocity
