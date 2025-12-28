@@ -25,5 +25,3 @@ Going into this, I did not intend to fully flesh out the project. Rather, I want
 4. Fill in the parameters of "yourrocketname.ignite_engines()", which is the drag coefficient and the cross-sectional area (area of the front of the rocket).
 	* For the drag coefficient, use a number between 0.2-0.3 for long, slender, and smooth rockets. For shorter, more blunt rockets, use a number between 0.5-0.7.
 5. Run main.py in the terminal.
-
-## Preview 🎬
