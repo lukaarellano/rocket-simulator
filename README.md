@@ -21,7 +21,7 @@ Going into this, I did not intend to fully flesh out the project. Rather, I want
 
 1. Clone the repository.
 2. Open main.py.
-3. Fill in the parameters of the "Rocket()" class. (total mass, fuel mass, engine's ISP in seconds, and the engine's burn time).
-4. Fill in the parameters of "yourrocketname.ignite_engines()", which is the drag coefficient and the cross-sectional area (area of the front of the rocket).
+3. Fill in the parameters of the "Rocket()" class. (total mass, fuel mass, engine's ISP in seconds, the engine's burn time, drag coefficient, and cross-sectional area).
 	* For the drag coefficient, use a number between 0.2-0.3 for long, slender, and smooth rockets. For shorter, more blunt rockets, use a number between 0.5-0.7.
+    * The cross-sectional area is the are of the front of the rocket.
 5. Run main.py in the terminal.
