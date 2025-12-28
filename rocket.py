@@ -5,13 +5,14 @@ from time import sleep
 from random import uniform
 
 class Rocket:
-    def __init__(self, mass, fuel, isp, burn_time, shape):
+    def __init__(self, mass, fuel, isp, burn_time, shape, radius):
         self.mass = mass
         self.fuel = fuel
         self.isp = isp
         self.burn_time = burn_time
         self.initial_mass = self.mass
         self.dry_mass = self.mass - self.fuel
+        self.radius = radius
         self.shape = None
         if shape == "ogive":
             self.shape = 0.3
@@ -28,8 +29,8 @@ class Rocket:
         self.mass_flow_rate = self.fuel / self.burn_time
         self.thrust = self.mass_flow_rate * self.isp * 9.81
         return self.thrust, self.mass_flow_rate
-    def ignite_engines(self, radius):
-        self.cross_sectional_area = math.pi * radius ** 2
+    def ignite_engines(self):
+        self.cross_sectional_area = math.pi * self.radius ** 2
         pitch = 90
         self.y = 0
         self.x = 0
